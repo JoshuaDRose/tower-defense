@@ -11,8 +11,8 @@ build:
 lint: venv/bin/activate
 	./venv/bin/pylint src/__main__.py --generated-members=pygame.* --disable=E0611
 
-test: venv/bin/activate
-	./venv/bin/python3 -m unittest discover -p 'tests/*.py' -v
+test: ./venv/bin/activate
+	./venv/bin/python3 -m unittest test
 
 clean:
 	rm -rf src/__pycache__

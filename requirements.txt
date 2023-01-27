@@ -4,3 +4,5 @@ pyinstaller
 loguru
 colorama
 requests
+pytest
+pytest-cov
