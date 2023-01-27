@@ -5,6 +5,9 @@ venv/bin/activate: requirements.txt
 run: venv/bin/activate
 	./venv/bin/python3 src
 
+build:
+	pyinstaller src/__main__.py --onefile
+
 clean:
 	rm -rf src/__pycache__
 	rm -rf venv
