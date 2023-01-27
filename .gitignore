@@ -1,4 +1,3 @@
+build/__main__/
 venv/
-build/
-dist/
-*.spec
+
