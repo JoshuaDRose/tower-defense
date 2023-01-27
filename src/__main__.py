@@ -129,9 +129,9 @@ while not done:
         if event.type == pygame.MOUSEBUTTONDOWN:
             for button in buttons:
                 if pygame.Rect.collidepoint(
-                        self=button.rect,           # pyright: ignore
-                        x_y=(mouse[0], mouse[1])):  # pyright: ignore
-                    if button.text.lower() == 'exit':        # pyright: ignore
+                        self=button.rect,
+                        x_y=(mouse[0], mouse[1])):
+                    if button.text.lower() == 'exit':
                         done = True
                     else:
                         play = True
@@ -139,16 +139,16 @@ while not done:
 
     for button in buttons:
         if pygame.Rect.collidepoint(
-                self=button.rect,           # pyright: ignore
-                x_y=(mouse[0], mouse[1])):  # pyright: ignore
-            button.hover = True                      # pyright: ignore
+                self=button.rect,
+                x_y=(mouse[0], mouse[1])):
+            button.hover = True
         else:
-            button.hover = False                     # pyright: ignore
+            button.hover = False
 
     screen.fill(color=(0, 0, 0, 255))
 
     for button in buttons:
-        button.draw(surface=screen)                          # pyright: ignore
+        button.draw(surface=screen)
 
     pygame.display.update()
     clock.tick(framerate=60)
@@ -172,18 +172,18 @@ while not done:
 
     for button in buttons:
         if pygame.Rect.collidepoint(
-                self=button.rect,           # pyright: ignore
-                x_y=(mouse[0], mouse[1])):  # pyright: ignore
-            button.hover = True                      # pyright: ignore
+                self=button.rect,
+                x_y=(mouse[0], mouse[1])):
+            button.hover = True
         else:
-            button.hover = False                     # pyright: ignore
+            button.hover = False
 
     screen.fill(
             color=(0, 0, 0, 255))
 
     for button in ui:
-        button.draw(                             # pyright: ignore
-                surface=screen)                  # pyright: ignore
+        button.draw(
+                surface=screen)
 
     defender_panel.draw(
             surface=screen)
