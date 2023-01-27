@@ -1,3 +1,6 @@
 pygame
 pylint
 pyinstaller
+loguru
+colorama
+requests
