@@ -23,14 +23,15 @@ SOFTWARE.
 """
 import sys
 import os
-import pygame
 import json
+import pygame
 from pygame import K_ESCAPE, KEYDOWN, K_q
 
 pygame.init()
 
 
 class Button(pygame.sprite.Sprite):
+    """ A clickable, animated button for UI and menus. """
     FONT = pygame.font.SysFont(
             name=pygame.font.get_default_font(),
             size=55)
@@ -38,20 +39,19 @@ class Button(pygame.sprite.Sprite):
     def __init__(
             self,
             text: str,
-            y: int,
+            position_y: int,
             group: pygame.sprite.Group,
-            x=None):
-        """ Creates a clickable button """
+            position_x=None):
         super().__init__(group)
         self.image: pygame.surface.Surface = Button.FONT.render(
                 text,
                 True,
                 (255, 255, 255, 255))
-        x = pygame.display.get_surface().get_rect().width // 2 - \
+        position_x = pygame.display.get_surface().get_rect().width // 2 - \
             self.image.get_rect().width // 2  # Center text on X axis
         self.rect: pygame.rect.Rect = pygame.Rect(
-                x,
-                y,
+                position_x,
+                position_y,
                 self.image.get_width(),
                 self.image.get_height())
         self.border: pygame.surface.Surface = pygame.Surface(
@@ -81,6 +81,11 @@ class Button(pygame.sprite.Sprite):
         self.border.set_alpha(self._alpha)
         surface.blit(self.border, (self.rect.x, self.rect.y))
 
+    @property
+    def is_transparent(self) -> bool:
+        """ Returns if the current surface is fully transparent """
+        return self._alpha == 0
+
 
 class Defenders:
     """ Panel that holds defender ui """
@@ -99,16 +104,24 @@ class Defenders:
                 self.rect,
                 0,
                 5)
+        self._alpha = 255
 
     def draw(self, surface) -> None:
         """ Draw image and rect to surface """
+        self.image.set_alpha(self._alpha)
         surface.blit(
                 self.image,
                 (self.rect.x, self.rect.y))
 
+    @property
+    def is_transparent(self) -> bool:
+        """ Returns if the current surface is fully transparent """
+        return self._alpha == 0
 
-config = {"file": open("src/config.json", "r")}
-config = json.load(config["file"])
+
+with open(os.path.join("src", "config.json"), 'r', 1, 'utf-8') as config:
+    config = json.load(config)
+
 size = (width, height) = config['screen']['width'], config['screen']['height']
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode(
@@ -119,8 +132,8 @@ screen = pygame.display.set_mode(
 
 pygame.display.set_caption(os.getcwd())
 
-done = False
-play = False
+DONE = False
+PLAY = False
 
 buttons = pygame.sprite.Group()
 Button(
@@ -136,11 +149,11 @@ Button(
 
 mouse = [0, 0]
 
-while not done:
+while not DONE:
     for event in pygame.event.get():
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE or K_q:
-                done = True
+                DONE = True
         if event.type == pygame.MOUSEMOTION:
             mouse: list[int] = list(pygame.mouse.get_pos())
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -149,10 +162,10 @@ while not done:
                         button.rect,
                         (mouse[0], mouse[1])):
                     if button.text.lower() == 'exit':
-                        done = True
+                        DONE = True
                     else:
-                        play = True
-                        done = True
+                        PLAY = True
+                        DONE = True
 
     for button in buttons:
         if pygame.Rect.collidepoint(
@@ -170,20 +183,20 @@ while not done:
     pygame.display.update()
     clock.tick(60)
 
-if not play:
+if not PLAY:
     pygame.quit()
     sys.exit()
 
-done = False
+DONE = False
 
 ui = pygame.sprite.Group()
 defender_panel = Defenders()
 
-while not done:
+while not DONE:
     for event in pygame.event.get():
         if event.type == KEYDOWN:
             if event.key == K_ESCAPE or K_q:
-                done = True
+                DONE = True
         if event.type == pygame.MOUSEMOTION:
             mouse = list(pygame.mouse.get_pos())
 
