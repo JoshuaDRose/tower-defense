@@ -37,21 +37,18 @@ class User:
         self.psw = os.environ.get("password")
 
 
-user = User()
-
-connection = database.connect(
-        user=user.name,
-        password=user.psw,
-        host='localhost',
-        database="workplace")
-
-
-class Database(connection.cursor):
+class Database(object):
     """ Database records test runs and errors """
     def __init__(self):
-        super().__init__()
+        self.user = User()
+        self.connection = database.connect(
+                user=self.user.name,
+                password=self.user.psw,
+                host='localhost',
+                database="workplace")
         self.tables = ["empolyees"]
         self.current_table = 0
+        self.cursor = self.connection.cursor()
 
     def add_entry(self, fname, lname) -> None:
         """ Accepts first and last names of empolyees """
@@ -152,6 +149,8 @@ class Defenders:
         return self._alpha == 0
 
 
+db = Database()
+
 with open(os.path.join("src", "config.json"), 'r', 1, 'utf-8') as config:
     config = json.load(config)
 
@@ -218,7 +217,7 @@ while not DONE:
     clock.tick(60)
 
 if not PLAY:
-    connection.close()
+    db.connection.close()
     pygame.quit()
     sys.exit()
 
@@ -252,6 +251,6 @@ while not DONE:
     pygame.display.update()
     clock.tick(fps)
 
-connection.close()
+db.connection.close()
 pygame.quit()
 sys.exit()
