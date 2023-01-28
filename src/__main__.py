@@ -23,15 +23,39 @@ SOFTWARE.
 """
 
 import sys
+import mysql.connector as database
+import pygame
 import os
 import json
-import pygame
+import colorama
 import subprocess
-import mysql.connector as database
-from datetime import datetime as dt
+from loguru import logger
 from pygame import K_ESCAPE, KEYDOWN, K_q
+from datetime import datetime as dt
 
 pygame.init()
+colorama.deinit()
+
+logger.remove()
+
+
+class Formatter:
+
+    def __init__(self):
+        self.padding = 0
+        self.fmt = "[{time}] <level>{name}:{function}{extra[padding]}</level> {message}\n{exception}"
+
+    def format(self, record):
+        length = len("{name}:{function}:{line}".format(**record))
+        self.padding = max(self.padding, length)
+        record["extra"]["padding"] = " " * (self.padding - length)
+        return self.fmt
+
+
+formatter = Formatter()
+
+logger.remove()
+logger.add(sys.stderr, format=formatter.format)
 
 
 class User:
@@ -55,14 +79,16 @@ class Database(object):
     """ Database records test runs and errors """
     def __init__(self):
         self.user = User()
-        self.connection = database.connect(
-                user=self.user.name,
-                password=self.user.psw,
-                host='localhost',
-                database="production")
+        self.config = dict()
+        with open(os.path.join(
+                'src', 'connector.json'), 'r', 1, 'utf-8') as fp:
+            self.config = json.load(fp)
+        self.connection = database.connect(**self.config)
+        self.cursor = self.connection.cursor()
+        logger.debug("connected to {} as {}".format(
+            self.config['host'], self.config['user']))
         self.tables = ["Run"]
         self.current_table = 0
-        self.cursor = self.connection.cursor()
 
     def add_entry(self, success=True) -> None:
         """ States if run is success (bool) """
@@ -70,13 +96,14 @@ class Database(object):
             date = dt.now().strftime("%Y-%m-%d")
             statement = """INSERT INTO Run (RunID,Date,Success) VALUES (%s, %s, %s)"""
             success = 1 if success else 0
-            self.cursor.execute(statement, (id(self), date, success))
+            self.cursor.execute(statement, (self.id, date, success))
         except database.Error as error:
-            print(f"Error adding entry to database: {error}")
+            logger.error(f"Error adding entry to database: {error}")
 
     @property
-    def get_id(self) -> int:
-        subprocess.check_output(['bash', 'mariadb_run.sh'])
+    def id(self) -> int:
+        stdout = subprocess.check_output(['bash', 'mariadb_run.sh'])
+        return int(stdout.decode('utf-8').strip())
 
     @staticmethod
     def increment_id() -> None:
