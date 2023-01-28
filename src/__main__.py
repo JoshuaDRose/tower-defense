@@ -26,6 +26,7 @@ import os
 import json
 import pygame
 import mysql.connector as database
+from datetime import datetime as dt
 from pygame import K_ESCAPE, KEYDOWN, K_q
 
 pygame.init()
@@ -37,6 +38,17 @@ class User:
         self.psw = os.environ.get("password")
 
 
+"""
++---------+------------+------+-----+---------+-------+
+| Field   | Type       | Null | Key | Default | Extra |
++---------+------------+------+-----+---------+-------+
+| RunID   | int(11)    | YES  |     | NULL    |       |
+| Date    | date       | YES  |     | NULL    |       |
+| Success | tinyint(1) | YES  |     | NULL    |       |
++---------+------------+------+-----+---------+-------+
+"""
+
+
 class Database(object):
     """ Database records test runs and errors """
     def __init__(self):
@@ -45,17 +57,18 @@ class Database(object):
                 user=self.user.name,
                 password=self.user.psw,
                 host='localhost',
-                database="workplace")
-        self.tables = ["empolyees"]
+                database="production")
+        self.tables = ["Run"]
         self.current_table = 0
         self.cursor = self.connection.cursor()
 
-    def add_entry(self, fname, lname) -> None:
-        """ Accepts first and last names of empolyees """
+    def add_entry(self, success=True) -> None:
+        """ States if run is success (bool) """
         try:
-            statement = "INSERT INTO {} ({}) VALUES (%s, %s)".format(
-                    self.tables[self.current_table], "first_name, last_name")
-            self.execute(statement, (fname, lname))
+            date = dt.now().strftime("%Y-%m-%d")
+            statement = """INSERT INTO Run (RunID,Date,Success) VALUES (%s, %s, %s)"""
+            success = 1 if success else 0
+            self.cursor.execute(statement, (id(self), date, success))
         except database.Error as error:
             print(f"Error adding entry to database: {error}")
 
@@ -250,6 +263,8 @@ while not DONE:
 
     pygame.display.update()
     clock.tick(fps)
+
+db.add_entry(success=True)
 
 db.connection.close()
 pygame.quit()
