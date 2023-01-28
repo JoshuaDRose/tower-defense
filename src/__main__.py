@@ -25,9 +25,42 @@ import sys
 import os
 import json
 import pygame
+import mysql.connector as database
 from pygame import K_ESCAPE, KEYDOWN, K_q
 
 pygame.init()
+
+
+class User:
+    def __init__(self):
+        self.name = os.environ.get("username")
+        self.psw = os.environ.get("password")
+
+
+user = User()
+
+connection = database.connect(
+        user=user.name,
+        password=user.psw,
+        host='localhost',
+        database="workplace")
+
+
+class Database(connection.cursor):
+    """ Database records test runs and errors """
+    def __init__(self):
+        super().__init__()
+        self.tables = ["empolyees"]
+        self.current_table = 0
+
+    def add_entry(self, fname, lname) -> None:
+        """ Accepts first and last names of empolyees """
+        try:
+            statement = "INSERT INTO {} ({}) VALUES (%s, %s)".format(
+                    self.tables[self.current_table], "first_name, last_name")
+            self.execute(statement, (fname, lname))
+        except database.Error as error:
+            print(f"Error adding entry to database: {error}")
 
 
 class Button(pygame.sprite.Sprite):
@@ -96,8 +129,8 @@ class Defenders:
         self.rect = pygame.Rect(
                 650,
                 100,
-                100,
-                550)
+                self.width,
+                self.height)
         pygame.draw.rect(
                 self.image,
                 (255, 255, 255, 255),
@@ -123,6 +156,7 @@ with open(os.path.join("src", "config.json"), 'r', 1, 'utf-8') as config:
     config = json.load(config)
 
 size = (width, height) = config['screen']['width'], config['screen']['height']
+fps: int = config.get('fps')
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode(
         size,
@@ -184,6 +218,7 @@ while not DONE:
     clock.tick(60)
 
 if not PLAY:
+    connection.close()
     pygame.quit()
     sys.exit()
 
@@ -211,12 +246,12 @@ while not DONE:
     screen.fill(
             (0, 0, 0, 255))
 
-    for button in ui:
-        button.draw(
-                screen)
-
     defender_panel.draw(
             screen)
 
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(fps)
+
+connection.close()
+pygame.quit()
+sys.exit()
