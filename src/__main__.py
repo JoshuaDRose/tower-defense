@@ -21,10 +21,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import sys
 import os
 import json
 import pygame
+import subprocess
 import mysql.connector as database
 from datetime import datetime as dt
 from pygame import K_ESCAPE, KEYDOWN, K_q
@@ -71,6 +73,14 @@ class Database(object):
             self.cursor.execute(statement, (id(self), date, success))
         except database.Error as error:
             print(f"Error adding entry to database: {error}")
+
+    @property
+    def get_id(self) -> int:
+        subprocess.check_output(['bash', 'mariadb_run.sh'])
+
+    @staticmethod
+    def increment_id() -> None:
+        subprocess.run(['source', 'mariadb_run.sh'])
 
 
 class Button(pygame.sprite.Sprite):
